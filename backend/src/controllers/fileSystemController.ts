@@ -1,0 +1,49 @@
+import { NextFunction, Request, Response } from "express";
+import * as fileSystemService from "../services/fileSystemService";
+
+export const createFolder = async (
+  req: Request,
+  res: Response,
+  _next: NextFunction,
+) => {
+  const { path } = req.body;
+
+  if (await fileSystemService.createFolder(path)) {
+    res.status(200);
+  } else {
+    res.status(500);
+  }
+};
+
+export const writeToFile = async (
+  req: Request,
+  res: Response,
+  _next: NextFunction,
+) => {
+  const { path, content } = req.body;
+
+  if (await fileSystemService.writeToFile(path, content)) {
+    res.status(200);
+  } else {
+    res.status(500);
+  }
+};
+
+export const readFile = async (
+  req: Request,
+  res: Response,
+  _next: NextFunction,
+) => {
+  const path = req.query.path;
+  if (!path) {
+    return res.status(400);
+  }
+
+  const fileContents = await fileSystemService.getFileContents(path as string);
+
+  if (fileContents) {
+    res.status(200).type("text/plain").send(fileContents);
+  } else {
+    res.status(500);
+  }
+};
