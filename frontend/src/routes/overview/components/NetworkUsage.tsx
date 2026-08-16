@@ -21,7 +21,7 @@ function NetworkUsage() {
     ? (networkUsage.bytesDownSinceBoot / 1000 / 1000 / 1000).toFixed(1)
     : undefined;
   const gbUpSinceBoot = networkUsage
-    ? (networkUsage.bytesDownSinceBoot / 1000 / 1000 / 1000).toFixed(1)
+    ? (networkUsage.bytesUpSinceBoot / 1000 / 1000 / 1000).toFixed(1)
     : undefined;
 
   return (
