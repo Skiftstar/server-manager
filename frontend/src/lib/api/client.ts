@@ -13,5 +13,10 @@ export async function apiFetch<T>(
     throw new Error(`API error ${res.status}: ${res.statusText}`);
   }
 
+  // 204 No Content (common for DELETE) has no body to parse
+  if (res.status === 204) {
+    return undefined as T;
+  }
+
   return res.json();
 }

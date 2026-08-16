@@ -19,3 +19,15 @@ export interface PortMapping {
 export const fetchContainers = (signal?: AbortSignal) => {
   return apiFetch<SimpleContainerResponse[]>("/docker/list", { signal });
 };
+
+export const deleteContainer = (id: string, signal?: AbortSignal) => {
+  return apiFetch<void>(`/docker/${id}`, { method: "DELETE", signal });
+};
+
+export const stopContainer = (id: string, signal?: AbortSignal) => {
+  return apiFetch<void>(`/docker/${id}/stop`, { signal });
+};
+
+export const startContainer = (id: string, signal?: AbortSignal) => {
+  return apiFetch<void>(`/docker/${id}/start`, { signal });
+};

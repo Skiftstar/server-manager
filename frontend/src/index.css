@@ -62,3 +62,8 @@
     filter: invert(1) brightness(2);
   }
 }
+
+button:disabled {
+  color: gray !important;
+  cursor: not-allowed !important;
+}

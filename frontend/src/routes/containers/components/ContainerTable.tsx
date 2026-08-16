@@ -1,11 +1,16 @@
 import { useEffect, useState } from "react";
 import DeleteOutlinedIcon from "@mui/icons-material/DeleteOutlined";
+import CachedOutlinedIcon from "@mui/icons-material/CachedOutlined";
 import {
+  deleteContainer,
   fetchContainers,
+  startContainer,
+  stopContainer,
   type PortMapping,
   type SimpleContainerResponse,
 } from "../api";
 import ContentCard from "../../../components/ContentCard";
+import SkeletonRow from "../../../components/SkeletonRow";
 
 function formatPorts(ports: PortMapping[]): string {
   if (ports.length === 0) return "–";
@@ -42,14 +47,16 @@ const statePriority: Record<string, number> = {
 };
 
 export default function ContainerTable() {
+  const [refetch, setRefetch] = useState(false);
   const [containers, setContainers] = useState<SimpleContainerResponse[]>([]);
-  const [_isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [_error, setError] = useState<Error | null>(null);
   const [query, setQuery] = useState("");
 
   useEffect(() => {
     const controller = new AbortController();
 
+    setIsLoading(true);
     fetchContainers(controller.signal)
       .then(setContainers)
       .catch((err) => {
@@ -58,7 +65,7 @@ export default function ContainerTable() {
       .finally(() => setIsLoading(false));
 
     return () => controller.abort();
-  }, []);
+  }, [refetch]);
 
   const filtered = containers
     .filter((c) =>
@@ -81,9 +88,17 @@ export default function ContainerTable() {
             placeholder="Filter by name, image or service"
             className="bg-bg text-accent-2 placeholder-accent-2/65 text-sm rounded-md px-3 py-2 w-72 border border-divider focus:outline-none focus:ring-1 focus:ring-gray-600"
           />
-          <span className="text-sm text-accent-2/65">
+          <span className="text-sm ml-auto text-accent-2/65">
             {filtered.length} of {containers.length} containers
           </span>
+          <button
+            className="text-accent-2/65 cursor-pointer ml-2"
+            onClick={() => {
+              setRefetch(!refetch);
+            }}
+          >
+            <CachedOutlinedIcon />
+          </button>
         </div>
 
         <table className="w-full text-sm border-collapse table-fixed">
@@ -108,47 +123,68 @@ export default function ContainerTable() {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((c) => (
-              <tr
-                key={c.Id}
-                className="border-b border-gray-900 hover:bg-gray-900/50 transition-colors"
-              >
-                <td className="py-3 px-1 text-accent-2/65 font-mono text-xs truncate">
-                  {c.Id}
-                </td>
-                <td className="py-3 px-1 text-text font-medium">
-                  {c.Names.join(", ")}
-                </td>
-                <td className="py-3 px-1 text-accent-2/65 truncate">
-                  {c.Image}
-                </td>
-                <td className="py-3 px-1 text-accent-2/65 whitespace-pre-line">
-                  {formatPorts(c.Ports)}
-                </td>
-                <td className="py-3 px-1 text-accent-2/65">{c.Status}</td>
-                <td className="py-3 px-1">
-                  <span
-                    className={`px-2 py-0.5 rounded-full text-xs font-medium`}
+            {isLoading
+              ? Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
+              : filtered.map((c) => (
+                  <tr
+                    key={c.Id}
+                    className="border-b border-gray-900 hover:bg-gray-900/50 transition-colors"
                   >
-                    {c.State}
-                  </span>
-                </td>
-                <td className="py-3 px-1 text-right space-x-3 whitespace-nowrap">
-                  <button className="text-blue-400 hover:text-blue-300 text-xs cursor-pointer">
-                    Logs
-                  </button>
-                  <button className="text-blue-400 hover:text-blue-300 text-xs cursor-pointer">
-                    Exec
-                  </button>
-                  <button className="text-gray-300 hover:text-white text-xs border border-gray-700 rounded px-2 py-1 cursor-pointer">
-                    {c.State === "exited" ? "Start" : "Stop"}
-                  </button>
-                  <button className="text-red-500 cursor-pointer">
-                    <DeleteOutlinedIcon />
-                  </button>
-                </td>
-              </tr>
-            ))}
+                    <td className="py-3 px-1 text-accent-2/65 font-mono text-xs truncate">
+                      {c.Id}
+                    </td>
+                    <td className="py-3 px-1 text-text font-medium">
+                      {c.Names.join(", ")}
+                    </td>
+                    <td className="py-3 px-1 text-accent-2/65 truncate">
+                      {c.Image}
+                    </td>
+                    <td className="py-3 px-1 text-accent-2/65 whitespace-pre-line">
+                      {formatPorts(c.Ports)}
+                    </td>
+                    <td className="py-3 px-1 text-accent-2/65">{c.Status}</td>
+                    <td className="py-3 px-1">
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-xs font-medium`}
+                      >
+                        {c.State}
+                      </span>
+                    </td>
+                    <td className="py-3 px-1 text-right space-x-3 whitespace-nowrap">
+                      <button className="text-blue-400 hover:text-blue-300 text-xs cursor-pointer">
+                        Logs
+                      </button>
+                      <button
+                        disabled={c.State !== "running"}
+                        className="text-blue-400 hover:text-blue-300 text-xs cursor-pointer"
+                      >
+                        Exec
+                      </button>
+                      <button
+                        className="text-gray-300 hover:text-white text-xs border border-gray-700 rounded px-2 py-1 cursor-pointer"
+                        onClick={async () => {
+                          if (c.State === "exited") {
+                            await startContainer(c.Id);
+                          } else {
+                            await stopContainer(c.Id);
+                          }
+                          setRefetch(!refetch);
+                        }}
+                      >
+                        {c.State === "exited" ? "Start" : "Stop"}
+                      </button>
+                      <button
+                        className="text-red-500 cursor-pointer"
+                        onClick={async () => {
+                          await deleteContainer(c.Id);
+                          setRefetch(!refetch);
+                        }}
+                      >
+                        <DeleteOutlinedIcon />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
           </tbody>
         </table>
       </div>
