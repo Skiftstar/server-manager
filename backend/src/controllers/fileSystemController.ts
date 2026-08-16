@@ -9,9 +9,9 @@ export const createFolder = async (
   const { path } = req.body;
 
   if (await fileSystemService.createFolder(path)) {
-    res.status(200);
+    res.status(200).send();
   } else {
-    res.status(500);
+    res.status(500).send();
   }
 };
 
@@ -23,9 +23,9 @@ export const writeToFile = async (
   const { path, content } = req.body;
 
   if (await fileSystemService.writeToFile(path, content)) {
-    res.status(200);
+    res.status(200).send();
   } else {
-    res.status(500);
+    res.status(500).send();
   }
 };
 
@@ -36,7 +36,7 @@ export const readFile = async (
 ) => {
   const path = req.query.path;
   if (!path) {
-    return res.status(400);
+    return res.status(400).send();
   }
 
   const fileContents = await fileSystemService.getFileContents(path as string);
@@ -44,6 +44,6 @@ export const readFile = async (
   if (fileContents) {
     res.status(200).type("text/plain").send(fileContents);
   } else {
-    res.status(500);
+    res.status(500).send();
   }
 };
