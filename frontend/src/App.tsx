@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router";
 import "./App.css";
 import Overview from "./routes/overview/Overview";
 import Sidebar from "./components/layout/Sidebar";
+import Containers from "./routes/containers/Containers";
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Navigate to={"/overview"} replace />} />
           <Route path="/overview" element={<Overview />} />
+          <Route path="/containers" element={<Containers />} />
         </Routes>
       </main>
     </BrowserRouter>

@@ -36,7 +36,7 @@ function DiskUsage() {
           const tbFree = formatBlocks(disk._available);
           const usedPercent = Math.round((disk._used / disk._blocks) * 100);
           return (
-            <div className="flex flex-row gap-4 w-full items-center">
+            <div className="flex flex-row gap-4 w-full items-center border-t pt-2 border-divider">
               <div className="flex flex-col flex-1">
                 <div className="flex flex-row items-center text-text">
                   <span className="whitespace-nowrap min-w-[20%]">
