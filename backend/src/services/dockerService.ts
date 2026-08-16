@@ -3,6 +3,36 @@ import { SimpleContainerResponse } from "../types/dockerTypes";
 
 const docker = new Docker({ socketPath: "/var/run/docker.sock" });
 
+export const startContainer = async (containerId: string): Promise<boolean> => {
+  try {
+    await docker.getContainer(containerId).start();
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+export const stopContainer = async (containerId: string): Promise<boolean> => {
+  try {
+    await docker.getContainer(containerId).stop();
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+export const deleteContainer = async (
+  containerId: string,
+): Promise<boolean> => {
+  try {
+    const container = docker.getContainer(containerId);
+    await container.remove({ force: true });
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 export const getAllDockerContainers = async (): Promise<
   SimpleContainerResponse[]
 > => {

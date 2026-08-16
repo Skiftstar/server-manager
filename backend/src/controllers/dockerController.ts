@@ -22,3 +22,45 @@ export const getContainerLogs = async (
 
   res.status(200).type("text/plain").send(logs);
 };
+
+export const deleteContainer = async (
+  req: Request,
+  res: Response,
+  _next: NextFunction,
+) => {
+  const { id } = req.params;
+
+  if (await dockerService.deleteContainer(id as string)) {
+    res.status(204).send();
+  } else {
+    res.status(500).send();
+  }
+};
+
+export const startContainer = async (
+  req: Request,
+  res: Response,
+  _next: NextFunction,
+) => {
+  const { id } = req.params;
+
+  if (await dockerService.startContainer(id as string)) {
+    res.status(200).send();
+  } else {
+    res.status(500).send();
+  }
+};
+
+export const stopContainer = async (
+  req: Request,
+  res: Response,
+  _next: NextFunction,
+) => {
+  const { id } = req.params;
+
+  if (await dockerService.stopContainer(id as string)) {
+    res.status(200).send();
+  } else {
+    res.status(500).send();
+  }
+};
