@@ -20,3 +20,18 @@ export async function apiFetch<T>(
 
   return res.json();
 }
+
+export async function apiFetchText(
+  path: string,
+  options: RequestInit = {},
+): Promise<string> {
+  const res = await fetch(`${BASE_URL}${path}`, {
+    ...options,
+  });
+
+  if (!res.ok) {
+    throw new Error(`API error ${res.status}: ${res.statusText}`);
+  }
+
+  return res.text();
+}
