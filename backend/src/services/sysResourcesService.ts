@@ -65,6 +65,7 @@ export const getMemoryUsage = () => {
   return {
     total: os.totalmem(),
     free: os.freemem(),
+    used: os.totalmem() - os.freemem(),
   };
 };
 
