@@ -15,6 +15,19 @@ export const createFolder = async (
   }
 };
 
+export const scanDir = async (
+  req: Request,
+  res: Response,
+  _next: NextFunction,
+) => {
+  const path = req.query.path;
+  if (!path) {
+    return res.status(400).send();
+  }
+
+  res.status(200).json(await fileSystemService.scanDirectory(path as string));
+};
+
 export const writeToFile = async (
   req: Request,
   res: Response,
