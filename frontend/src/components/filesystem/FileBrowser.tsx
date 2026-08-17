@@ -1,30 +1,30 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState } from "react";
 import { scanDir, type FSObject } from "./api";
-import FileEditor from "./FileEditor";
-import RoundedButton from "../RoundedButton";
+import FolderOutlinedIcon from "@mui/icons-material/FolderOutlined";
+import KeyboardArrowDownOutlinedIcon from "@mui/icons-material/KeyboardArrowDownOutlined";
+import KeyboardArrowRightOutlinedIcon from "@mui/icons-material/KeyboardArrowRightOutlined";
+import InsertDriveFileOutlinedIcon from "@mui/icons-material/InsertDriveFileOutlined";
 
 interface FileBrowserProps {
   path: string;
   label?: string;
-  addPadding?: boolean;
-  showAddFileButton: boolean;
-  children?: ReactNode;
+  onFileSelected: (file: FSObject) => void;
+  selectedFile?: FSObject;
+  depth?: number;
 }
 
 function FileBrowser({
   path,
   label,
-  addPadding,
-  showAddFileButton,
-  children,
+  onFileSelected,
+  selectedFile,
+  depth = 0,
 }: FileBrowserProps) {
   const [refetch, _setRefetch] = useState(false);
   const [dirContents, setDirContents] = useState<FSObject[]>([]);
   const [_isLoading, setIsLoading] = useState(false);
   const [_error, setError] = useState<Error | null>(null);
-  const [selectedObject, setSelectedObject] = useState<FSObject | undefined>(
-    undefined,
-  );
+  const [isFolderOpen, setIsFolderOpen] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -41,49 +41,50 @@ function FileBrowser({
   }, [refetch, path]);
 
   return (
-    <div
-      className={`flex flex-row flex-1 h-full min-h-0 ${addPadding ? "pl-4" : "pl-0"}`}
-    >
-      <div className="flex flex-col pr-4 border-r border-divider h-full pt-2">
-        <span className="text-accent-2/65 text-xs text-nowrap pt-2 pb-4 text-left">
-          {label ?? path}
-        </span>
-        {dirContents.map((obj) => {
-          return (
-            <div
-              className={`py-2 pl-2 pr-8 rounded-md text-xs cursor-pointer ${
-                selectedObject === obj ? "bg-accent/30" : "hover:bg-accent-2/30"
-              }`}
-              onClick={() => {
-                setSelectedObject(obj);
-              }}
-            >
-              <span>{obj.name}</span>
-            </div>
-          );
-        })}
-        {(showAddFileButton || children) && (
-          <div className="flex flex-col gap-2 border-t border-divider pt-2">
-            {showAddFileButton && (
-              <RoundedButton className="text-2xs w-full text-start">
-                + New File
-              </RoundedButton>
-            )}
-            {children}
-          </div>
+    <div className="flex flex-col min-h-0 text-xs gap-1 w-full">
+      <div
+        onClick={() => setIsFolderOpen(!isFolderOpen)}
+        className="flex flex-row gap-1 items-center hover:bg-divider/65 w-full cursor-pointer rounded p-1"
+        style={{ paddingLeft: `${depth * 1}rem` }}
+      >
+        {isFolderOpen ? (
+          <KeyboardArrowDownOutlinedIcon
+            sx={{ height: "1rem", width: "1rem" }}
+          />
+        ) : (
+          <KeyboardArrowRightOutlinedIcon
+            sx={{ height: "1rem", width: "1rem" }}
+          />
         )}
+        <FolderOutlinedIcon sx={{ height: "1rem", width: "1rem" }} />
+        <span className="text-nowrap text-left">{`${label ?? path}/`}</span>
+        <span className="ml-auto pl-2">+</span>
       </div>
-      {selectedObject && (
-        <div className="w-full">
-          {selectedObject.type === "FILE" ? (
-            <FileEditor filePath={selectedObject.fullPath} />
-          ) : (
-            <FileBrowser
-              path={selectedObject.fullPath}
-              label={selectedObject.name}
-              addPadding={true}
-              showAddFileButton={true}
-            />
+      {isFolderOpen && (
+        <div className="flex flex-col w-full gap-1">
+          {dirContents.map((obj) =>
+            obj.type === "FILE" ? (
+              <div
+                key={obj.fullPath}
+                onClick={() => onFileSelected(obj)}
+                className={`flex w-full flex-row gap-1 items-center hover:bg-divider/65 cursor-pointer rounded p-1 px-2 ${selectedFile === obj ? "bg-divider" : ""}`}
+                style={{ paddingLeft: `${(depth + 2.25) * 1}rem` }}
+              >
+                <InsertDriveFileOutlinedIcon
+                  sx={{ height: "1rem", width: "1rem" }}
+                />
+                <span className="text-left text-nowrap">{obj.name}</span>
+              </div>
+            ) : (
+              <FileBrowser
+                key={obj.fullPath}
+                path={obj.fullPath}
+                label={obj.name}
+                onFileSelected={onFileSelected}
+                selectedFile={selectedFile}
+                depth={depth + 1}
+              />
+            ),
           )}
         </div>
       )}
