@@ -6,6 +6,7 @@ import FileEditor from "../../components/filesystem/FileEditor";
 
 function Services() {
   const [selectedFile, setSelectedFile] = useState<FSObject>();
+  const [forceRefresh, setForceRefresh] = useState(false);
 
   const { config, isLoading } = useConfig();
 
@@ -20,10 +21,18 @@ function Services() {
           onFileSelected={(file) => {
             setSelectedFile(file);
           }}
+          forceRefresh={forceRefresh}
         />
       </div>
       <div className="w-full">
-        {selectedFile && <FileEditor filePath={selectedFile.fullPath} />}
+        {selectedFile && (
+          <FileEditor
+            filePath={selectedFile.fullPath}
+            onFileDelete={() => {
+              setForceRefresh(!forceRefresh);
+            }}
+          />
+        )}
       </div>
     </div>
   );

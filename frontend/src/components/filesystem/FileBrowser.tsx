@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { scanDir, type FSObject } from "./api";
+import { createFolder, scanDir, writeFile, type FSObject } from "./api";
 import FolderOutlinedIcon from "@mui/icons-material/FolderOutlined";
 import KeyboardArrowDownOutlinedIcon from "@mui/icons-material/KeyboardArrowDownOutlined";
 import KeyboardArrowRightOutlinedIcon from "@mui/icons-material/KeyboardArrowRightOutlined";
@@ -10,6 +10,8 @@ interface FileBrowserProps {
   label?: string;
   onFileSelected: (file: FSObject) => void;
   selectedFile?: FSObject;
+  enableFileCreation?: boolean;
+  forceRefresh?: boolean;
   depth?: number;
 }
 
@@ -18,13 +20,17 @@ function FileBrowser({
   label,
   onFileSelected,
   selectedFile,
+  enableFileCreation = true,
+  forceRefresh = false,
   depth = 0,
 }: FileBrowserProps) {
-  const [refetch, _setRefetch] = useState(false);
+  const [refetch, setRefetch] = useState(false);
   const [dirContents, setDirContents] = useState<FSObject[]>([]);
   const [_isLoading, setIsLoading] = useState(false);
   const [_error, setError] = useState<Error | null>(null);
   const [isFolderOpen, setIsFolderOpen] = useState(false);
+  const [isCreatingFile, setIsCreatingFile] = useState(false);
+  const [newFileName, setNewFileName] = useState("");
 
   useEffect(() => {
     const controller = new AbortController();
@@ -38,7 +44,19 @@ function FileBrowser({
       .finally(() => setIsLoading(false));
 
     return () => controller.abort();
-  }, [refetch, path]);
+  }, [refetch, path, forceRefresh]);
+
+  const handleFileCreation = async () => {
+    const currPath = path.endsWith("/") ? path : `${path}/`;
+    if (newFileName.endsWith("/")) {
+      await createFolder(`${currPath}${newFileName}`);
+    } else {
+      await writeFile(`${currPath}${newFileName}`, "");
+    }
+    setIsCreatingFile(false);
+    setNewFileName("");
+    setRefetch(!refetch);
+  };
 
   return (
     <div className="flex flex-col min-h-0 text-xs gap-1 w-full">
@@ -58,8 +76,47 @@ function FileBrowser({
         )}
         <FolderOutlinedIcon sx={{ height: "1rem", width: "1rem" }} />
         <span className="text-nowrap text-left">{`${label ?? path}/`}</span>
-        <span className="ml-auto pl-2">+</span>
+
+        {enableFileCreation && (
+          <div
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsFolderOpen(true);
+              setIsCreatingFile(true);
+            }}
+            className="hover:bg-accent-2/25 z-10 ml-auto px-2 rounded"
+          >
+            <span>+</span>
+          </div>
+        )}
       </div>
+      {isCreatingFile && (
+        <div>
+          <input
+            type="text"
+            className="outline-none border border-divider rounded"
+            style={{ paddingLeft: `${depth + 2.25}rem` }}
+            placeholder="Filename..."
+            autoFocus
+            onBlur={() => {
+              setIsCreatingFile(false);
+              setNewFileName("");
+            }}
+            value={newFileName}
+            onChange={(el) => {
+              setNewFileName(el.target.value);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleFileCreation();
+              } else if (e.key === "Escape") {
+                setIsCreatingFile(false);
+                setNewFileName("");
+              }
+            }}
+          />
+        </div>
+      )}
       {isFolderOpen && (
         <div className="flex flex-col w-full gap-1">
           {dirContents.map((obj) =>
@@ -82,6 +139,8 @@ function FileBrowser({
                 label={obj.name}
                 onFileSelected={onFileSelected}
                 selectedFile={selectedFile}
+                forceRefresh={forceRefresh}
+                enableFileCreation={enableFileCreation}
                 depth={depth + 1}
               />
             ),

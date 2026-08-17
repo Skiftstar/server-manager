@@ -1,11 +1,12 @@
 import Editor from "@monaco-editor/react";
 import { useEffect, useState } from "react";
-import { getFileContents, writeFile } from "./api";
+import { deletePath, getFileContents, writeFile } from "./api";
 import RoundedButton from "../RoundedButton";
 import { defineCustomTheme } from "../../lib/monacoTheme/customTheme";
 
 interface FileEditorProps {
   filePath: string;
+  onFileDelete: () => void;
 }
 
 function getLanguageFromPath(path: string): string {
@@ -27,7 +28,10 @@ function getLanguageFromPath(path: string): string {
   return map[ext ?? ""] ?? "plaintext";
 }
 
-export default function FileEditor({ filePath }: FileEditorProps) {
+export default function FileEditor({
+  filePath,
+  onFileDelete,
+}: FileEditorProps) {
   const [content, setContent] = useState<string>("");
   const [isLoading, setIsLoading] = useState(true);
 
@@ -52,7 +56,7 @@ export default function FileEditor({ filePath }: FileEditorProps) {
     <div className="flex flex-col h-full">
       <div className="flex flex-row p-3 items-center">
         <span>{filePath.split("/").pop()}</span>
-        <div className="ml-auto">
+        <div className="ml-auto flex flex-row gap-2">
           <RoundedButton
             onClick={async () => {
               await writeFile(filePath, content);
@@ -60,6 +64,15 @@ export default function FileEditor({ filePath }: FileEditorProps) {
             className="border-accent! hover:bg-accent/30!"
           >
             Save
+          </RoundedButton>
+          <RoundedButton
+            onClick={async () => {
+              await deletePath(filePath);
+              onFileDelete();
+            }}
+            className="border-red-500! hover:bg-red-500/30!"
+          >
+            Delete
           </RoundedButton>
         </div>
       </div>

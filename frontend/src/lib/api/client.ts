@@ -13,12 +13,22 @@ export async function apiFetch<T>(
     throw new Error(`API error ${res.status}: ${res.statusText}`);
   }
 
-  // 204 No Content (common for DELETE) has no body to parse
-  if (res.status === 204) {
+  // No body to parse — empty status codes, or a response with no content at all
+  if (res.status === 204 || res.status === 205) {
     return undefined as T;
   }
 
-  return res.json();
+  const contentType = res.headers.get("content-type");
+  if (!contentType || !contentType.includes("application/json")) {
+    return undefined as T;
+  }
+
+  const text = await res.text();
+  if (!text) {
+    return undefined as T;
+  }
+
+  return JSON.parse(text) as T;
 }
 
 export async function apiFetchText(
