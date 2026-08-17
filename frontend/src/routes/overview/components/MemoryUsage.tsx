@@ -13,7 +13,7 @@ function MemoryUsage() {
   });
 
   const usedPercent = memoryUsage
-    ? Math.round((memoryUsage?.used / memoryUsage?.free) * 100)
+    ? Math.round((memoryUsage?.used / memoryUsage?.total) * 100)
     : undefined;
   const usedGB = memoryUsage
     ? (memoryUsage.used / 1000 / 1000 / 1000).toFixed(1)
@@ -31,7 +31,7 @@ function MemoryUsage() {
     }
 
     setUsageDataArray(updatedArr);
-  }, [usedPercent]);
+  }, [memoryUsage]);
 
   return (
     <ContentCard>
