@@ -12,6 +12,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 loadConfig();
 
+app.use(express.json());
 app.use(cors());
 
 app.use("/sysResources", sysResourceRoute);
