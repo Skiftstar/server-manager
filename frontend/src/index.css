@@ -7,6 +7,7 @@
   --color-accent: #9184d9;
   --color-accent-2: #a7a1db;
   --color-divider: color-mix(in srgb, #e9e9ed 16%, transparent);
+  --text-2xs: 0.675rem;
 }
 
 :root {

@@ -1,6 +1,8 @@
 import Editor from "@monaco-editor/react";
 import { useEffect, useState } from "react";
-import { getFileContents } from "./api";
+import { getFileContents, writeFile } from "./api";
+import RoundedButton from "../RoundedButton";
+import { defineCustomTheme } from "../../lib/monacoTheme/customTheme";
 
 interface FileEditorProps {
   filePath: string;
@@ -30,6 +32,10 @@ export default function FileEditor({ filePath }: FileEditorProps) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    defineCustomTheme();
+  }, []);
+
+  useEffect(() => {
     const controller = new AbortController();
     setIsLoading(true);
 
@@ -44,10 +50,17 @@ export default function FileEditor({ filePath }: FileEditorProps) {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex flex-row p-3">
+      <div className="flex flex-row p-3 items-center">
         <span>{filePath.split("/").pop()}</span>
         <div className="ml-auto">
-          <button>Save Changes</button>
+          <RoundedButton
+            onClick={async () => {
+              await writeFile(filePath, content);
+            }}
+            className="border-accent! hover:bg-accent/30!"
+          >
+            Save
+          </RoundedButton>
         </div>
       </div>
       <Editor
@@ -55,7 +68,7 @@ export default function FileEditor({ filePath }: FileEditorProps) {
         width="100%"
         language={getLanguageFromPath(filePath)}
         value={content}
-        theme="vs-dark"
+        theme="custom-dark"
         onChange={(value) => setContent(value ?? "")}
         options={{
           minimap: { enabled: false },
