@@ -60,3 +60,22 @@ export const readFile = async (
     res.status(500).send();
   }
 };
+
+export const removePath = async (
+  req: Request,
+  res: Response,
+  _next: NextFunction,
+) => {
+  const path = req.query.path;
+  if (!path) {
+    return res.status(400).send();
+  }
+
+  const pathRemoved = await fileSystemService.removePath(path as string);
+
+  if (pathRemoved) {
+    res.status(204).send();
+  } else {
+    res.status(500).send();
+  }
+};

@@ -1,4 +1,12 @@
-import { mkdir, readdir, readFile, writeFile } from "node:fs/promises";
+import {
+  lstat,
+  mkdir,
+  readdir,
+  readFile,
+  rm,
+  rmdir,
+  writeFile,
+} from "node:fs/promises";
 import { FSObject } from "../types/fileSystemTypes";
 import { join } from "node:path";
 
@@ -50,6 +58,20 @@ export const createFolder = async (path: string) => {
 export const writeToFile = async (path: string, content: string) => {
   try {
     await writeFile(path, content, "utf-8");
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+export const removePath = async (path: string) => {
+  const entry = await lstat(path);
+  try {
+    if (entry.isDirectory()) {
+      await rmdir(path);
+    } else {
+      await rm(path);
+    }
     return true;
   } catch {
     return false;
