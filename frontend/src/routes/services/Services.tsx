@@ -13,7 +13,7 @@ function Services() {
 
   return (
     <div className="h-full pl-3 flex flex-row">
-      <div className="border-r border-divider pr-4 pt-4">
+      <div className="border-r border-divider pr-4 pt-4 min-w-60">
         <FileBrowser
           path={config.servicesDir}
           selectedFile={selectedFile}
