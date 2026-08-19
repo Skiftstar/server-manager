@@ -1,4 +1,5 @@
 import {
+  chmod,
   lstat,
   mkdir,
   readdir,
@@ -9,6 +10,16 @@ import {
 } from "node:fs/promises";
 import { FSObject } from "../types/fileSystemTypes";
 import { join } from "node:path";
+
+export const chmodFile = async (path: string, permissionsString: string) => {
+  try {
+    await chmod(path, permissionsString);
+    return true;
+  } catch (error) {
+    console.error(error);
+    return false;
+  }
+};
 
 export const scanDirectory = async (path: string): Promise<FSObject[]> => {
   const entries = await readdir(path, { withFileTypes: true });
@@ -41,7 +52,8 @@ export const getFileContents = async (path: string) => {
   try {
     const content = readFile(path, "utf-8");
     return content;
-  } catch {
+  } catch (error) {
+    console.error(error);
     return undefined;
   }
 };

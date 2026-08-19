@@ -42,6 +42,20 @@ export const writeToFile = async (
   }
 };
 
+export const chmodFile = async (
+  req: Request,
+  res: Response,
+  _next: NextFunction,
+) => {
+  const { path, permissionsString } = req.body;
+
+  if (await fileSystemService.chmodFile(path, permissionsString)) {
+    res.status(200).send();
+  } else {
+    res.status(500).send();
+  }
+};
+
 export const readFile = async (
   req: Request,
   res: Response,
@@ -54,7 +68,7 @@ export const readFile = async (
 
   const fileContents = await fileSystemService.getFileContents(path as string);
 
-  if (fileContents) {
+  if (fileContents !== undefined) {
     res.status(200).type("text/plain").send(fileContents);
   } else {
     res.status(500).send();
