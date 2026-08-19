@@ -9,6 +9,11 @@ interface FileBrowserProps {
   path: string;
   label?: string;
   onFileSelected: (file: FSObject) => void;
+  onFileCreated?: (
+    filePath: string,
+    isFolder: boolean,
+    parentFolder: string,
+  ) => Promise<void>;
   selectedFile?: FSObject;
   enableFileCreation?: boolean;
   forceRefresh?: boolean;
@@ -19,6 +24,7 @@ function FileBrowser({
   path,
   label,
   onFileSelected,
+  onFileCreated,
   selectedFile,
   enableFileCreation = true,
   forceRefresh = false,
@@ -48,13 +54,18 @@ function FileBrowser({
 
   const handleFileCreation = async () => {
     const currPath = path.endsWith("/") ? path : `${path}/`;
-    if (newFileName.endsWith("/")) {
-      await createFolder(`${currPath}${newFileName}`);
+    const filePath = `${currPath}${newFileName}`;
+    const isFolder = newFileName.endsWith("/");
+    if (isFolder) {
+      await createFolder(filePath);
     } else {
-      await writeFile(`${currPath}${newFileName}`, "");
+      await writeFile(filePath, "");
     }
     setIsCreatingFile(false);
     setNewFileName("");
+    if (onFileCreated) {
+      await onFileCreated(filePath, isFolder, path);
+    }
     setRefetch(!refetch);
   };
 
