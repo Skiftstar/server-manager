@@ -6,6 +6,7 @@ import scriptsRoute from "./routes/scriptsRoute";
 import servicesRoute from "./routes/servicesRoute";
 import fileSystemRoute from "./routes/fileSystemRoute";
 import configRoute from "./routes/configRoute";
+import cronRoute from "./routes/cronRoute";
 import { loadConfig } from "./services/configService";
 
 const app = express();
@@ -21,6 +22,7 @@ app.use("/scripts", scriptsRoute);
 app.use("/services", servicesRoute);
 app.use("/fileSystem", fileSystemRoute);
 app.use("/config", configRoute);
+app.use("/cron", cronRoute);
 
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
