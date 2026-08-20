@@ -1,4 +1,5 @@
 import { apiFetch } from "../../lib/api/client";
+import type { MessageResponse } from "../../lib/api/messages";
 
 export interface CronTab {
   cronString: string;
@@ -11,7 +12,7 @@ export const fetchCrontabs = (signal?: AbortSignal) => {
 };
 
 export const writeCrontabs = (crontabs: CronTab[], signal?: AbortSignal) => {
-  return apiFetch<void>(`/cron/write`, {
+  return apiFetch<MessageResponse>(`/cron/write`, {
     method: "POST",
     body: JSON.stringify({
       crontabs,

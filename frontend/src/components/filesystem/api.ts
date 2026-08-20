@@ -1,4 +1,5 @@
 import { apiFetch, apiFetchText } from "../../lib/api/client";
+import type { MessageResponse } from "../../lib/api/messages";
 
 export interface FSObject {
   name: string;
@@ -16,7 +17,7 @@ export const getFileContents = (path: string, signal?: AbortSignal) => {
 };
 
 export const createFolder = (path: string, signal?: AbortSignal) => {
-  return apiFetch<boolean>(`/fileSystem/mkdir`, {
+  return apiFetch<MessageResponse>(`/fileSystem/mkdir`, {
     method: "POST",
     signal,
     body: JSON.stringify({ path }),
@@ -28,7 +29,7 @@ export const writeFile = (
   content: string,
   signal?: AbortSignal,
 ) => {
-  return apiFetch<boolean>(`/fileSystem/write`, {
+  return apiFetch<MessageResponse>(`/fileSystem/write`, {
     method: "POST",
     signal,
     body: JSON.stringify({ path, content }),
@@ -36,7 +37,7 @@ export const writeFile = (
 };
 
 export const deletePath = (path: string, signal?: AbortSignal) => {
-  return apiFetch<void>(`/fileSystem/rm?path=${path}`, {
+  return apiFetch<MessageResponse>(`/fileSystem/rm?path=${path}`, {
     method: "DELETE",
     signal,
   });

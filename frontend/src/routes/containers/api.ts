@@ -1,4 +1,5 @@
 import { apiFetch } from "../../lib/api/client";
+import type { MessageResponse } from "../../lib/api/messages";
 
 export interface SimpleContainerResponse {
   Id: string;
@@ -21,13 +22,16 @@ export const fetchContainers = (signal?: AbortSignal) => {
 };
 
 export const deleteContainer = (id: string, signal?: AbortSignal) => {
-  return apiFetch<void>(`/docker/${id}`, { method: "DELETE", signal });
+  return apiFetch<MessageResponse>(`/docker/${id}`, {
+    method: "DELETE",
+    signal,
+  });
 };
 
 export const stopContainer = (id: string, signal?: AbortSignal) => {
-  return apiFetch<void>(`/docker/${id}/stop`, { signal });
+  return apiFetch<MessageResponse>(`/docker/${id}/stop`, { signal });
 };
 
 export const startContainer = (id: string, signal?: AbortSignal) => {
-  return apiFetch<void>(`/docker/${id}/start`, { signal });
+  return apiFetch<MessageResponse>(`/docker/${id}/start`, { signal });
 };

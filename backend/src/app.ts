@@ -1,4 +1,4 @@
-import express from "express";
+import express, { ErrorRequestHandler } from "express";
 import cors from "cors";
 import sysResourceRoute from "./routes/sysResourcesRoute";
 import dockerRoute from "./routes/dockerRoute";
@@ -23,6 +23,12 @@ app.use("/services", servicesRoute);
 app.use("/fileSystem", fileSystemRoute);
 app.use("/config", configRoute);
 app.use("/cron", cronRoute);
+
+const errorHandler: ErrorRequestHandler = (err, _req, res, _next) => {
+  console.error(err);
+  res.status(500).json({ message: "INTERNAL_SERVER_ERROR" });
+};
+app.use(errorHandler);
 
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);

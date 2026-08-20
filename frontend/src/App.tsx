@@ -1,4 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router";
+import { Toaster } from "sonner";
 import "./App.css";
 import Overview from "./routes/overview/Overview";
 import Sidebar from "./components/layout/Sidebar";
@@ -26,6 +27,7 @@ function App() {
           </Routes>
         </main>
       </BrowserRouter>
+      <Toaster theme="system" richColors closeButton position="bottom-right" />
     </ConfigProvider>
   );
 }

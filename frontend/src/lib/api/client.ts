@@ -1,4 +1,31 @@
+import { toast } from "sonner";
+import { getErrorMessage, getSuccessMessage } from "./messages";
+
 const BASE_URL = import.meta.env.VITE_API_URL ?? "/api";
+
+async function parseJsonBody(res: Response): Promise<unknown> {
+  // No body to parse — empty status codes, or a response with no content at all
+  if (res.status === 204 || res.status === 205) return undefined;
+
+  const contentType = res.headers.get("content-type");
+  if (!contentType || !contentType.includes("application/json")) {
+    return undefined;
+  }
+
+  const text = await res.text();
+  if (!text) return undefined;
+
+  return JSON.parse(text);
+}
+
+function isMessageResponse(body: unknown): body is { message: string } {
+  return (
+    typeof body === "object" &&
+    body !== null &&
+    Object.keys(body).length === 1 &&
+    typeof (body as Record<string, unknown>).message === "string"
+  );
+}
 
 export async function apiFetch<T>(
   path: string,
@@ -9,26 +36,19 @@ export async function apiFetch<T>(
     ...options,
   });
 
+  const body = await parseJsonBody(res);
+
   if (!res.ok) {
-    throw new Error(`API error ${res.status}: ${res.statusText}`);
+    const code = isMessageResponse(body) ? body.message : undefined;
+    toast.error(getErrorMessage(code), { id: path });
+    throw new Error(getErrorMessage(code));
   }
 
-  // No body to parse — empty status codes, or a response with no content at all
-  if (res.status === 204 || res.status === 205) {
-    return undefined as T;
+  if (isMessageResponse(body)) {
+    toast.success(getSuccessMessage(body.message));
   }
 
-  const contentType = res.headers.get("content-type");
-  if (!contentType || !contentType.includes("application/json")) {
-    return undefined as T;
-  }
-
-  const text = await res.text();
-  if (!text) {
-    return undefined as T;
-  }
-
-  return JSON.parse(text) as T;
+  return body as T;
 }
 
 export async function apiFetchText(
@@ -40,7 +60,10 @@ export async function apiFetchText(
   });
 
   if (!res.ok) {
-    throw new Error(`API error ${res.status}: ${res.statusText}`);
+    const body = await parseJsonBody(res);
+    const code = isMessageResponse(body) ? body.message : undefined;
+    toast.error(getErrorMessage(code), { id: path });
+    throw new Error(getErrorMessage(code));
   }
 
   return res.text();
